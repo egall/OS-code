@@ -1,0 +1,72 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[english]{babel}
+\usepackage[pdftex, unicode]{hyperref}
+
+\title{Shell: Design Document}
+\date{April 13, 2011}
+\author{Erik Q. Steggall}
+
+\maketitle
+
+\begin{document}
+\section{Purpose}
+The purpose of this project is for use to create a functioning shell. 
+
+\section{Available Resources}
+My project has the following fuctions:
+\subsection{getline()}
+This function was given to us as starter code
+\subsection{main()}
+The main function waits for input from the command line, it captures the input using getline(). I added a line to give the shell a '>' prompt, and a continue statment it a newline was recieved. Otherwise I call parsecommand().
+\subsection{parse\_command()}
+My parse command is my most complex function. I tried to structure it so that it is as efficient as possible. I did this by first checking to see the command entered was a simple command, such as cd(), exit().
+
+If it was not either of the commands above, I have it run through the input arguements. At this point I was left with the decision of making one function that can process any command inputted, or have a few separate functions that will run more efficiently. I decided on the latter because I had already written the functions. I tried to make each function backwards compatable too, so sys\_exe\_redir() should be able to function as sys\_execute() if need be.
+
+Next, I count the number of command arguemnts that were inputted. The first thing I check is to see if there are two or less. If so, I call sys\_execute(), the most simple sys() function I wrote. Otherwise, I assume that there is either a pipe or redirect.
+
+I then run through the entire arguement array checking for input redirects, output redirects and I count the number of pipes. If there is an input redirect or output redirect without a pipe I call sys\_exe\_redir(). *Note: My shell does not support input and output redirects in the same command, I did not see it on the specs.
+
+Finally, if there are pipes:
+Important Variables:
+I have a three dimentional character array to hold the arguement chunks between the pipes. I also have a two dimentional integer array I use for the pipes.
+Logic:
+I cycle through the command arguments by the number of pipes plus one. Within this for loop I have a loop that cycles through the input arguements checking for pipes. If the arguement is not a pipe, it adds it to my three dimentional array by cycling through each individual character and adding it to the appropriate position in my array. If the arguement is a pipe it will call one of two sys\_exe\_pipe()'s, depending on the number of pipes that have been seen already, then it break. At the end of my loops, I have a last call to sys\_exe\_pipe that will call the end case for sys\_exe\_pipe(). Lastly, I free my arrays.
+
+
+\subsection{sys\_execute()}
+Important Variables:
+pid
+Logic:
+This function is fairly simple, I call fork() and check to make sure that it executed properly. Then, I check to see if it's a child or parent. If it's a child I call execvp() and check to make sure it was successful. If it's a parent, I wait for the child to finish.
+\subsection{sys\_exe\_redir()}
+Important Variables:
+pid
+filedesc
+mode
+Logic:
+I follow essentially the same format as I did in sys\_execute(), however I also have checks to see if an input flag or output flag is given. If so, I call get\_filename(), then open the file that was specified. Inside the child I have a second check for input and output flags and call dup2() accordingly.
+\subsection{sys\_exe\_pipe()}
+Important Variables:
+pipefd\_in
+pipefd\_out
+Logic:
+*Note: this function is not finished. I'll describe what I intend to impliment.
+I will copy the logic of sys\_exe\_redir() so that it supports input and output redirects. 
+I fork the process, then I check to see if I should read from a pipe and not standard input. If a pipe is given as input, I call dup2() with the pipe input and stdin as arguements. Then I close stdin. I then check to see if I should read from a pipe instead of standard out. If a pipe is given for output, I call dup2() with the pipe output and stdout. Then close stdout. 
+
+After I have checked for input and output redirection, I call execvp() with my the arguements inputted.
+\subsection{get\_filename()}
+Important Variables:
+filename
+Logic:
+I assume that the filename will follow directly after either '>' or '<' in the command arguements. Assuming this, I strcpy() the arguement after the redirect and then delete both the redirect and the filename from the arguement list.
+
+\section{Lessons Learned}
+
+This project has taught me a lot about system calls, and input and output redirection. I learned a great deal about using forks and pipes, and system calls in general. This is the first program I have written using system calls, I feel a lot better about my programming skills knowing how to impliment basic system calls.
+
+I also got learned a great deal about memory allocation. I've never had to use a three dimentional array in C before, it was hard for me to figure out how to properly allocate the memory space for it. Now I am much more confident when it comes to pointers and memory allocation.
+
+\end{document}

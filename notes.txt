@@ -1,0 +1,233 @@
+A process is deadlocked if it is waiting for resources that another process is using while that process is waiting for resources that it is using.
+
+Four conditions for deadlock:
+1. hold and wait
+2. circular wait
+3. preemption
+4. mutual exclusion
+
+****************************************************
+Dead lock detection is a depth first search of the resource allocation table.
+
+little hitler
+ps3 hack transcript
+
+Is there anything stopping you from getting out of logical memory region. I.E. go into physical mem.
+Paper on bit-maps by Dr. Long.
+Linked list vs bitmap.
+
+External fragmentation - memeory outside your program.
+
+gamblers ruin
+
+
+*************************************************************
+project2: Scheduling
+
+producer:
+enqueue() calls sched()
+
+consumer: 
+pick_proc() what process runs next.
+
+*********************************************************
+Page replacement algorithms:
+optimal: Not implimentable 
+Not recently used: Crude
+FIFO: Might throw out useful pages
+Second chance: Big improvement on fifo
+clock: Better than second chance
+LRU Least recently used: Hard to impliment
+Not frequently used: Poor approx of LRU
+*more
+
+*Modeling page replacement* on midterm.
+-Stack algorithms
+Don't suffer from Beladys anomoly.
+
+process has: Own address space with cpu timeslicing.
+
+Thread needs its own stack and own set of reg. Threads stay within the processes address space, threads = # of program counters.
+
+Round robin, no starvation, everything is fair. 
+
+safe, all processes can finish
+unsafe, potential deadlock because two processes use the same resources.
+deadlock, deadlock
+
+worst, bestfit, randomfit, worstfit, nextfit, best
+
+
+- inclusion property
+
+**********************************************************
+Lottery
+
+Edit:
+do_nice.c
+  do_nice(n){ /* most of the time between -20 and 19. Normal usrproc = 10*/
+    // user processes can't go negative
+    //convert n to tickets according to the following:
+    // nice   : 1    10   20
+    // tickets: 100   5    1
+  }
+do_nice.h
+do_fork.c
+  do_fork(){
+    // do the following at the end of the function:
+    //init tickets, run count, set p_priority = 16;
+  }
+do_fork.h
+proc.h
+    struct proc{
+       int lottery_tickets;
+       int run_count;
+}
+        USER_Q = (max-min)/2
+        MAX_USER_Q = 0;
+        MY_USER_Q = 16;
+        NR_SCHED_Q = 19;
+        TASK_Q;
+proc.c
+  // tells enqueue which process to call
+  sched(rp, &q, &front){      // called by enqueue(rp)
+    /*
+    if user proc:
+      Lottery: q = p_priority;
+      RRPQ: check/increase runcount & promote or demote  
+   */
+    if(ticks != 0){
+      front = TRUE(1);
+    }
+    q = rp->p_priority;       //Find priority, setup in do_fork()
+    run_count++;              //Should already be part of struct
+    //figure out if need demotion to lesser queue 
+    if(run_count > 5){
+      //demote to lesser queue
+    }
+    else if(run_count > 10){
+       //demote to lesser queue
+    }
+    else if(run_count > 15){
+       //demote to lesser queue
+    }
+  }
+
+  pick_proc(){
+    for(each queue that's not a user queue){
+      if( head) return head;
+    }
+    Do your picking here || return NULL;
+  }
+  balance_queue(){
+    //dont do anything to user process
+  }
+  enqueue(){
+  }
+  dequeue(){
+  }
+  enqueue_load(){
+  }
+  sched_check(){
+  }
+
+lottery scheduler
+  - only need one queue
+  - assume each process # of ticket
+  - randomly draw a ticket #
+  - decide which process runs first(algorithm)
+  - run for quantum
+  - times interrupt to set the time quantum 
+
+do_fork()
+  if(priv(rpp->s_flags & sys_proc) // Check to see if usr proc or not
+    //Set priority
+  }
+  if(!(priv(rpc)->s_flags & sys_proc) ){ //Check to see if usr process or not
+
+****************************************************************
+Round Robin
+
+For sentinal process:
+have extra field to proc struct to check dummy.
+declare 3 procs in main(). 
+
+proc.h{
+EXTERN struct proc proc[NR_TASKS + NR_PROCS + 2];
+}
+
+/usr/src/servers/is/dmp_kernel.c{
+PUBLIC struct proc proc[NR_TASKS + NR_PROCS + 2];
+add +2 to process table
+}
+
+main.c{
+declare 3 pointers to rp's
+at top do:
+struct proc* dummy;
+
+after announce()
+dummy = proc[NR_TASKS + NR_PROCS];
+enqueue(dummy);
+dummy = proc[NR_TASKS + NR_PROCS+1];
+enqueue(dummy);
+}
+
+do_fork.c
+  do_fork(){
+    // do the following at the end of the function:
+    //init tickets, run count, set p_priority = 16;
+  }
+
+proc.h
+    struct proc{
+       int lottery_tickets;
+       int run_count;
+        USER_Q = (max-min)/2
+        MAX_USER_Q = 0;
+        MY_USER_Q = 16;
+        NR_SCHED_Q = 19;
+        MIN_USER_Q = (NR_SCHED_QUEUES -2);
+        TASK_Q;
+}
+
+proc.c
+  // tells enqueue which process to call
+  sched(rp, &q, &front){      // called by enqueue(rp)
+    /*
+    if user proc:
+      Lottery: q = p_priority;
+      RRPQ: check/increase runcount & promote or demote  
+   */
+    if(ticks != 0){
+      front = TRUE(1);
+    }
+    q = rp->p_priority;       //Find priority, setup in do_fork()
+    run_count++;              //Should already be part of struct
+    //figure out if need demotion to lesser queue 
+    if(run_count > 5){
+      //demote to lesser queue
+    }
+    else if(run_count > 10){
+       //demote to lesser queue
+    }
+    else if(run_count > 15){
+       //demote to lesser queue
+    }
+}
+
+**********************************************************
+Testing:
+Do long run
+
+
+If just kernel
+/usr/src/tools
+make install
+
+if proc.h  is modified
+/usr/src/commands
+make clean install
+*then do the above make
+
+

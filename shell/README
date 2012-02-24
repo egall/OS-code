@@ -1,0 +1,22 @@
+Erik Steggall
+esteggal@ucsc.edu
+CMPS111
+Asg1
+
+Note: I studied code from www.csl.mtu.edu and wikipedia for this project.
+
+Functions:
+
+main{
+  The main of my shell reads in input from the command line and calls functions according to the input.
+}
+
+sys_exit{
+  This function simply calls exit(EXIT_SUCCESS).
+}
+
+sys_execute{
+  Function forks;
+  Child process executes command and then exits;
+  Parent process waits for child
+}

@@ -1,0 +1,192 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[english]{babel}
+\usepackage[pdftex, unicode]{hyperref}
+
+\title{Scheduler: Design Document}
+\date{April, 24, 2011}
+\author{Erik Q. Steggall}
+
+
+\begin{document}
+\maketitle
+
+\section{Purpose}
+
+The purpose of this assignment is for us to gain a more in-depth understanding of how the operating system schedules processes. In this assignment we impliment a lottery scheduler a multi-level feedback based scheduler. \\
+
+\section{Available Resources}
+I only modified a couple of functions in order to complete the lottery: \\
+
+\noindent
+proc.c: \\
+balance\_queue(); \\
+sched() \\
+pick\_proc() \\
+
+\noindent
+do\_fork.c: \\
+do\_nice.c: \\
+
+\noindent
+balance\_queues() \\
+$\downarrow $ \\
+enqueue() \\
+$\downarrow \uparrow$ \\
+sched() \\
+
+\noindent
+sched\_check() \\
+$\downarrow \uparrow $ \\
+pick\_proc() \\
+
+In order to impliment the round robin scheduler I also modified: \\
+
+\noindent
+main.c \\
+
+\noindent
+dmp\_kernel.c \\
+
+
+\section{Design}
+
+The way I view the scheduler (courtesy of Jeff), is as a farm in which there are functions that "grow" the processes and functions that "harvest" the processes. I will attempt to explain it as such: \\
+
+\noindent
+{\bf Growing functions } \\
+balance\_queues() is constantly running and updating the process table. It calls enqueue(). enqueue() then calls sched() to figure out where to enqueue the process. Finally, sched() gives enqueue() the correct position to return the process to. \\
+
+
+\noindent
+{\bf Harvesting functions} \\
+sched\_check() calls pick\_proc() when there it is ready to run a function. pick\_proc() then runs through the queues, if it is a system process queue it uses the existing minix code and returns, if it is the user queue then it . \\
+
+
+\section{Psudo Code for Lottery}
+The lottery scheduler works as such: \\
+Each process is given five tickets to start. The processes can be given more tickets by doing a nice with a negative value, likewise, tickets can be taken away by doing a nice with a positive value.\\
+The tickets come into play when the process is getting picked. All of the tickets are totaled up, then a random number is picked. I then cycle through the queue and subtract each processes lottery tickets from the random number. Once the random number drops to zero or lower, that process is returned.
+
+{\bf proc.h} \\
+I added lottery tickets to the proc struct and an additional user queue. \\
+
+\noindent
+{\bf proc.c} \\
+\begin{verbatim}
+
+balance_queues(){
+  for( all queues){
+    if(system process)
+      do Minix code
+    else
+      do nothing
+  }
+}
+
+sched()
+  if( system process)
+    do Minix code
+  else
+    do nothing
+
+
+pick_proc()
+  if(proc is system proc){
+    do Minix code
+  }
+  /* This is the logic behind my lottery scheduler */
+  else{
+    if(lottery_list is empty){
+      run idel;
+    }
+    for(all processes on lottery_list){
+      find number of tickets(depends on quanta used and nice_value?);
+      total_tickets += i.process.ticket;
+    }
+    pick random number % ticket number( 1 <= ticket_num <= total_tickets);
+    for(all processes on lottery_list){
+      random -= process ticket;
+      if(random <= 0){
+        return process`;
+      }
+    }
+  }
+}
+\end{verbatim}
+
+\noindent
+{\bf do\_fork()} \\
+I set the ticket number to 5. \\
+
+\noindent
+{\bf do\_nice()} \\
+
+\begin{verbatim}
+if( priority > 0)
+  tickets = (5 - (priority)/5)
+else if (priority < 0
+  tickets = ( (-95/20)*priority + 5)
+else
+  tickets = 5
+
+\end{verbatim}
+
+\section{Psudo Code for Round Robin}
+
+* Note: I wasn't able to get Round Robin to work. \\
+The round robin scheduler works as such: \\
+I start with the three user queues and enqueue a sentinal or "dummy" process into each queue. Then, in sched(), I go through each of the queues, if the run count is greater than five, it is demoted to a lower queue. If the run count is greater than ten it is demoted to a lower queue. If the run count is lower than fifteen it is demoted to a lower queue. \\
+For picking the process, I first check to see if the head of the queue is a "dummy" process, if it is, I call the process from the next lower queue. If it isn't, I return the process, which effectively dequeues it and enqueues it onto the back to the list. \\
+
+{\bf proc.h} \\
+I added a run count variable to the struct and add three new user queues. I also added the two "dummy" processes to the process table. \\
+
+{\bf proc.c} \\
+
+
+\begin{verbatim}
+sched()
+  if(system process)
+    do Minix code
+  else (user process)
+    if(tick != 0)
+      front = true
+    increment run count
+    if( run count > 5)
+      demote to lesser queue
+    else if( run count > 10)
+      demote to lesser queue
+    else if( run count > 15 && not in lowest queue)
+      demote to lesser queue
+
+
+pick_proc()
+  if(system process)
+    run Minix code
+  else
+    for(all user queues)
+      if( sentinal at head)
+        run the head of next queue
+      else
+        run the head of the current queues
+
+\end{verbatim}
+
+
+\noindent
+One of the challenges I had was adding in the dummy queues. I did so by modifying main.c and dmp\_kernel.c. \\
+
+
+\noindent
+{\bf dmp\_kernel.c} \\
+I add two more processes to the process table. \\
+
+\noindent
+{\bf main.c} \\
+I declare a proc pointer that a call "dummy". \\
+Then after announce() is called I enqueue the "dummy" process into each of my user queues. \\
+
+
+
+\end{document}

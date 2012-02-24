@@ -1,0 +1,218 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[english]{babel}
+\usepackage[pdftex, unicode]{hyperref}
+
+\title{Memory: Design Document}
+\date{May, 18, 2011}
+\author{Erik Q. Steggall}
+
+\begin{document}
+\maketitle
+
+\section{Purpose}
+The purpose of this project is to write alternate algorithms for the operating system's memory allocation. We are to write next fit, random fit, best fit and worst fit.\\
+
+\section{Design}
+I wrote a system call that can change the type of algorithm being used by the operating system's memory allocator. The system call will change the algorithm if it is given a number between one and four. Otherwise it runs the already implimented first fit algorithm. Here is the list:\\
+Input number            Algorithm type\\
+    1                    Next fit\\
+    2                    Random fit\\
+    3                    Worst fit\\
+    4                    Best fit\\
+    0 or *               First fit\\
+
+\section{Design details}
+
+\subsection{Make}
+
+\begin{verbatim}
+
+setup.sh{
+  #!/bin/sh
+  cd /usr/src/servers
+  make image
+  make install
+  cd /usr/src
+  make libraries
+  cd /usr/src/tools
+  make hdboot
+  make install
+}
+\end{verbatim}
+
+
+\subsection{System Call}
+
+I started in /usr/src/servers/pm/ in which I modified table.c and proto.h. I added: \\
+{\bf pm.h}
+added int algo\_type\\
+{\bf table.c}\\
+\begin{verbatim}
+added memory\_call to slot 69:
+memory\_call,    /* 69 = egall mem call  */
+\end{verbatim}
+
+
+{\bf proto.h}\\
+\begin{verbatim}
+added the following to misc.c:
+\_PROTOTYPE( int memory\_call, (void)                                     ); \\
+\end{verbatim}
+
+{\bf misc.c}
+\begin{verbatim}
+PUBLIC int memory_call(){
+  printf("\I am a system call \n");
+  return(OK);
+}
+\end{verbatim}
+
+
+In /usr/src/include/minix.callnr.h I added: \\
+\#define MEMORY            69 \\
+
+In /usr/src/lib/posix I added the file memory.c with the contents\\
+
+{\bf \_memcall.c}
+\begin{verbatim}
+PUBLIC int memcall(int algotype){
+  message m;
+  m.m1\_i1 = algotype;
+  return(\_syscall(MM, MEMCALL, &m);
+}
+\end{verbatim}
+
+\section{Memory allocation algorithms}
+
+\subsection{First Fit}
+
+{\bf Psudo code}
+
+\begin{verbatim}
+while(There are still holes in the list){
+  if(Length of current hole is >= # of clicks){
+    old_base = current_base;
+    current_length -= # of clicks;
+    current_base += # of clicks;
+    if(current_base > high watermark){
+      high_watermark = current_base;
+    }
+    if(current_length == 0){
+      del_slot(previous, current)
+    }
+    return(old_base);
+  }
+  previous = current;
+  current = next;
+}
+\end{verbatim}
+
+{\bf Next fit}
+
+\begin{verbatim}
+while(There are still holes in the list: Start at curr_fit){
+  if(Length of current hole is >= # of clicks){
+    old_base = current_base;
+    current_length -= # of clicks;
+    current_base += # of clicks;
+    if(current_base > high watermark){
+      high_watermark = current_base;
+    }
+    if(current_length == 0){
+      del_slot(previous, current)
+    }
+    return(old_base);
+  }
+  previous = current;
+  current = next;
+}
+\end{verbatim}
+
+{\bf Random fit}
+
+\begin{verbatim}
+while(0){
+  rand = ramdom number;
+  rand = (rand%#of holes)
+  for(;current_hole != NULL; current++){
+    if(length of curr hole is >= # of clicks){
+      old_base = current_base;
+      current_length -= # of clicks;
+      current_base += # of clicks;
+      if(current_base > high watermark){
+        high_watermark = current_base;
+      }
+      if(current_length == 0){
+        del_slot(previous, current);
+      }
+      return(old_base);
+    }
+  }
+}
+\end{verbatim}
+
+{\bf Worst fit}
+
+\begin{verbatim}
+int max;
+int slot;
+for(i;all holes in list){
+  if(max < length of curr hole && length of curr hole >= # of clicks){
+    max = current_length;
+    slot = i;
+  }
+}
+for(i > slot; i++){
+  curr = curr->next);
+}
+old_base = current_base;
+current_length -= # of clicks;
+current_base += # of clicks;
+if(current_base > high watermark){
+  high_watermark = current_base;
+}
+if(current_length == 0){
+  del_slot(previous, current);
+}
+return(old_base);
+\end{verbatim}
+
+
+{\bf Best fit}
+
+
+\begin{verbatim}
+int min;
+int slot;
+for(i;all holes in list){
+  if(min < length of curr hole && length of curr hole >= # of clicks){
+    max = current_length;
+    slot = i;
+  }
+}
+for(i > slot; i++){
+  curr = curr->next);
+}
+old_base = current_base;
+current_length -= # of clicks;
+current_base += # of clicks;
+if(current_base > high watermark){
+  high_watermark = current_base;
+}
+if(current_length == 0){
+  del_slot(previous, current);
+}
+return(old_base);
+\end{verbatim}
+
+
+\section{Testing}
+In order to test the program, copy all of the files over to their proper places. Run the setup.sh shell script. Shutdown, startup with the 3rd option. Run test.c.\\
+
+\section{Conclusion}
+I got a lot more practice with changing the operating system on a virtual machine. I feel a lot more comfortable working with Minix after writing this program out.\\
+I learned how to impliment a system call in the Minix operating system. I feel confident in implimenting other system calls if need be. I also feel that I am prepared to impliment a system call in a distro of Linux or MacOS if I were so inclined.\\
+
+\end{document}
+

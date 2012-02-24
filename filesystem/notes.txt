@@ -1,0 +1,102 @@
+if(rip->i_mode & 0x200){
+}
+
+rw_chunk(position, block_size)
+  file [       ];
+  position points to position in file;
+  block_size specifies block size;
+  block_nr = position/block_size;
+}
+  
+
+rw_chunk(){
+  #define SIG_ZONE V2_NR_TZONES-1 = The third indirect inode pointer or "signature zone";
+  rip = pointer to inode we're working with;
+  bp = pointer to block we're working with;
+  buff = virtual address user space buffer passed into rw_chunk;
+  rip->i_zone[SIG_ZONE] = inode signature zone;
+
+get_sig_block?{
+  scale = rip->i_sp->s_log_zone_size;
+  struct buf * sbp;
+  int sig = get_signature();
+  int block_nr = position/block_size;
+  sbp->b_data[4*block_nr+0] = (sig & (255 << 0) )
+  sbp->b_data[4*block_nr+1] = (sig & (255 << 8) )
+  sbp->b_data[4*block_nr+2] = (sig & (255 << 16) )
+  sbp->b_data[4*block_nr+3] = (sig & (255 << 24) )
+  zone_t z;
+  block_t block;
+  z = rip-> i_zone[SIG_ZONE];
+    if(z == NO_ZONE{
+      \\create zone; 
+        \\(use alloc_zone) to allocate new zone;
+        \\point rip->i_zone[SIG_ZONE] to the new zone;
+      \\get block;
+         \\scale block  (get from super block);
+         \\find scale, bit shift
+           block = z << scale; (block_t from above)
+         \\use get_block to get a new block and set sbp;
+         \\use zero_block to zero sbp;
+      \\allocate signature block;
+    }else{
+    \\read block
+      \\scale block;
+      \\use get_block to get a new block and set sbp;
+    }
+}
+
+//compute signature
+
+sig = 0;
+for(i = 0; 0 < i < blocksize; i += 4){
+  \\XOR sig;
+  sig ^= ((int)bp->b_data[i]);
+  sig ^= ((int)bp->b_data[i+1]) << 8;
+  sig ^= ((int)bp->b_data[i+2]) << 16;
+  sig ^= ((int)bp->b_data[i+3]) << 24;
+}
+//read signature
+read_sig = 0;
+for(i = 0; 0 < i < blocksize; i += 4){
+  \\XOR sig;
+  read_sig ^= sbp->b_data[i]);
+  read_sig ^= sbp->b_data[i+1]) << 8;
+  read_sig ^= sbp->b_data[i+2]) << 16;
+  read_sig ^= sbp->b_data[i+3]) << 24;
+}
+\\write signature
+  int sig = get_signature();
+  int block_nr = position/block_size;
+  sbp->b_data[4*block_nr+0] = (sig & (255 << 0) )
+  sbp->b_data[4*block_nr+1] = (sig & (255 << 8) )
+  sbp->b_data[4*block_nr+2] = (sig & (255 << 16) )
+  sbp->b_data[4*block_nr+3] = (sig & (255 << 24) )
+
+modify free_zone or free_block to free sig_block
+
+check for stickey bit
+shift i_mode
+32 bit number
+sticky bit is 9th bit
+mask bit by 1 to see if it's sticky
+
+make clean install /tools
+
+
+
+get pointer to sig_block;
+  if(rip->i_zone[SIG_ZONE] == NO_ZONE){
+    create new zone with alloc_zone();
+    set rip->i_zone[SIG_ZONE] to new zone;
+    get a block with get_block();
+  }else{
+    get the block with get_block();
+  }
+
+  if(write){
+    compute signature;
+    write signature;
+  }else{
+    compute signature;
+  }

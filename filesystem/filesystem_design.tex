@@ -1,0 +1,79 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[english]{babel}
+\usepackage[pdftex, unicode]{hyperref}
+
+\title{Filesystem: Design Document}
+\date{June 2, 2011}
+\author{Erik Q. Steggall}
+
+\begin{document}
+\maketitle
+
+\section{Purpose}
+The purpose of this project is to impliment a signature bit onto files. Implimenting this requires an intimate knowledge of the Minix filesystem.\\
+
+\section{Design}
+In order to impliment the signature I had to write in functions to compute and write the signature. I modified read.c so that it has the ability to read and write signatures.\\
+
+\section{Design details/psudo code}
+
+{\bf read.c}
+
+
+{\bf rw\_chunk()}\\
+\begin{verbatim}
+  rip is the pointer to inode
+  bp is the pointer to block
+  sbp is the pointer to signature block
+  signature is the block signature 
+  SIG\_ZONE is the signature zone
+  block is the current block
+  if(sticky bit is set and file inode){
+    scale is the amount to shift by
+    if(The zone has been already been created){
+      Allocate a zone for the current inode at SIG\_ZONE;
+      Get scale to shift by;
+      Get a block for sbp to point to;
+      zero out sbp
+    }else{
+      shift block by scale;
+      Get a block for sbp to point to;  
+    }
+    if(READING){
+      Signature gets output of compute signature;
+      print signature;
+    }else{
+      Signature gets output of compute signature;
+      write signature;
+    } 
+  } 
+}      
+\end{verbatim}
+
+{\bf compute\_signature}\\
+\begin{verbatim}
+  signature is the block signature
+  itor = iterator
+  for(itor to blocksize, itor+4){
+    signature XOR block data;
+  }
+  return signature
+\end{verbatim}
+
+\section{Testing}
+My code works for putting in signatures: It writes a new signature every write, and reads the same signature as long a there isn't a write in between. I wasn't able to get the file to lock the user out, but I would imagine adding a signature field to the struct buf, and checking the signature against that.\\
+To test, run fsSetup.sh, shutdown, boot up, test out file.\\
+
+\section{Conclusion}
+I learned a lot about how the Minix file system works. This was the first project that I felt comfortable working with the Minix source code. For instance, I completely screwed my VM so I had to reinstall. At the beginning of the quarter I would have had no clue of how to get my networking going. This time, I was able to find some documentation online and modified a file in /usr/etc/rc and it worked! I have a lot more repect for how much work and operating system does behind the scenes to allow us to use even the most basic functions of modern computers. I now feel like I could start tinkering with the Linix OS which is what I had hoped to get out of this class.\\ 
+
+      
+      
+      
+    
+
+
+
+
+\end{document}

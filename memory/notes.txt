@@ -1,0 +1,83 @@
+struct hole hole[_NR_HOLES]
+  #hole.head;
+  #free_slots;
+
+  shut your struct hole;
+
+Adding system calls to Minix
+
+#include <lib.h>
+
+/usr/src/servers/pm
+table.c
+   _PROTOTYPE {
+              ...
+              ... 
+              *my_syscall;
+   }
+proto.h
+  _PROTOTYPE(void do_mysyscall(void) ); //takes in all args through messages.
+misc.c
+  PUBLIC void do_mysyscall
+  m_in.
+  m_in
+ 
+
+
+Mem:
+/usr/src/servers/vm/alloc.c
+
+/usr/src/servers/vm/main.c
+alloc_mem_f
+switch (mem_alg)
+
+getpid();
+in order to get pid do:
+message m;
+syscall(proc_nr, MINIX_GETPID, &m); // gives m the pid
+
+*/usr/src/include/minix/callnr.h
+NCALLS
+#define *my_syscall* = curr_num ++;
+
+/usr/src/servers/pm/
+*table.c
+*misc.c
+*proto.h
+*mysyscall.h
+*mysyscall.c
+getpid();
+#define alg m1_i1
+void mysyscall(int algorithm){
+  message m;
+  m.alg = algorithm;
+  _syscall(PM_PROC_NR, MY_SYSCALL, &m);
+}
+
+/usr/lib
+  *mysyscall.c
+  *mysyscall.h
+  user code calls _syscall(~,MY_SYSCALL, ~);
+  table.c <----- callnr.h
+  misc.c <---- table.c
+  misc.c:
+        do_mysyscall()
+        m_in.alg
+        set global var = m_in.alg
+
+  mysyscall.h
+  mysyscall.c
+  ipc.h
+  
+
+struct hole{
+
+  phys_clicks h_base;
+  phys_clicks h_len;
+  struct hole* h_next;
+}
+
+struct hole hole[_NR_HOLES];
+  *hole_head; /* pointer for first hole*/
+  *free_slots; /* pointer to list of unused slots */
+

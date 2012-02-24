@@ -1,0 +1,5 @@
+Lottery:
+I got lottery scheduler to work!
+
+Round Robin:
+I've been having trouble getting files from Minix to my host computer so I wasn't able to inclue my changes to main.c and dmp_kernel.c. I didn't get round robin working anyway and you helped me edit those files for round robin, so I guess it's not that big of a deal. I named all of my round robin files *_rr so you could tell the difference.
