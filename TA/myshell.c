@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <stdlib.h>
 
 extern char **get_line();
 
@@ -41,7 +42,7 @@ main() {
  * return: none 
  *                                */
 void sys_exit(void){
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 /*
