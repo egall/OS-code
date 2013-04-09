@@ -17,7 +17,6 @@ void parse_command(char **args);
 /* main(): takes input from keyboard
  * and passes it to parse_command
  *                                  */
-
 main() {
   int i;
   char **args; 
@@ -42,14 +41,13 @@ main() {
  * return: none 
  *                                */
 void sys_exit(void){
-    exit(EXIT_SUCCESS);
+    exit(0);
 }
 
 /*
  * args: characters entered 
  * returns: none 
  *                                */
-
 void parse_command(char **args){
   if(strcmp(args[0], "exit") == 0) sys_exit();
 }
