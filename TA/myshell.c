@@ -5,23 +5,15 @@
 
 extern char **get_line();
 
-/* Function exits shell when called 
- * args: none
- * return: none 
- *                                */
-void sys_exit(void){
-    exit(EXIT_SUCCESS);
-}
+/* Function exits shell when called */
+void sys_exit(void);
 
-/* Function parses the string given
+
+/* Function parses the string given 
  * from the command prompt
- * args: characters entered 
- * returns: none 
  *                                */
+void parse_command(char **args);
 
-void parse_command(char **args){
-
-}
 /* main(): takes input from keyboard
  * and passes it to parse_command
  *                                  */
@@ -43,4 +35,21 @@ main() {
     }
     parse_command(args);
   }
+}
+
+/* 
+ * args: none
+ * return: none 
+ *                                */
+void sys_exit(void){
+    exit(EXIT_SUCCESS);
+}
+
+/*
+ * args: characters entered 
+ * returns: none 
+ *                                */
+
+void parse_command(char **args){
+  if(strcmp(args[0], "exit") == 0) sys_exit();
 }
