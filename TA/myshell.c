@@ -17,6 +17,11 @@ void parse_command(char**);
 /* Function executes the input command */
 void execute(char** command_list);
 
+/* Function handles in pipes */
+void execute_in(char** args, char* file);
+/* Function handles out pipes */
+void execute_out(char** args, char* file);
+
 /* main(): takes input from keyboard
  * and passes it to parse_command   */
 main() {
@@ -40,6 +45,51 @@ main() {
 //    execute(prompt_input);
   }
 }
+/*
+ * args: characters entered 
+ * returns: none                     */
+void parse_command(char** input){
+  char* end;
+  int itor;
+  int pipe_found = 0;
+  char* file;
+  /* loop through input looking for redirects */
+  for(itor = 0;( (itor < 64) && (input[itor] != NULL)); ++itor){
+    if(strcmp(input[itor], ">") == 0){
+      /* File will be after redir */
+      file = input[itor+1];
+      /* We already got the info we need, so get rid of redir from input */
+      input[itor] = '\0';
+      /* We already got the info we need, so get rid of file from input */
+      input[itor+1] = '\0';
+      execute_out(input, file);
+      pipe_found = 1;
+    }else if(strcmp(input[itor], "<") == 0){
+      /* File will be after redir */
+      file = input[itor+1];
+      /* We already got the info we need, so get rid of redir from input */
+      input[itor] = '\0';
+      /* We already got the info we need, so get rid of file from input */
+      input[itor+1] = '\0';
+      execute_in(input, file);
+      pipe_found = 1;
+    }else if(strcmp(input[itor], "|") == 0){
+      /* File will be after redir */
+      file = input[itor+1];
+      /* We already got the info we need, so get rid of redir from input */
+      input[itor] = '\0';
+      /* We already got the info we need, so get rid of file from input */
+      input[itor+1] = '\0';
+      printf("Found a pipe\n");
+      pipe_found = 1;
+    }
+  }
+  if(pipe_found == 0){ 
+    execute(input);
+  }
+}
+
+
 
 /* 
  * args: none
@@ -56,61 +106,53 @@ void execute(char** command_list){
   int status;
   int tester;
 
+  /* Special case for exit */
   if(strcmp(command_list[0], "exit") == 0 ){
     sys_exit();
   }
+  /* Special case for cd */
   else if(strcmp(command_list[0], "cd") == 0){
     if(chdir(command_list[1]) < 0){
         printf("Error: %s is not a valid directory\n", command_list[1]);
     }
+  /* All other commands */
   }else{
 
+    /* If fork() fails, -1 is returned, error out */
     if( (pid = fork() ) < 0){
       printf("Error: Fork failed\n");
       exit(0);
     }
+    /* If this is the child process pid == 0 */
     else if(pid == 0){
+      /* Execute command, error out if command fails */
       if(execvp(*command_list, command_list) < 0){
         printf("Error: execvp() failed\n");
         exit(0);
       } 
     }
+    /* If it's the parent */
     else {
+      /* Wait while for child to finish */
       while(wait(&status) != pid);
     }
   }
    
 }
 
-/*
- * args: characters entered 
- * returns: none                     */
-void parse_command(char** input){
-  char* end;
-  execute(input);
-  /* Find the '\n', which marks the end of the input.
-     Replace '\n' with '\0' to signify the new end   */
-//  if ((end = strchr(input, '\n')) != NULL){
-//    *end = '\0';
-//  }
+
+/* args: Command, filename
+   returns: nothing                     */
+void execute_in(char** args, char* file){
+  printf("This is an input redirect\n Args = %s\nFile = %s\n", args[0], file);
   
-  
-  /* Loop until end is found */
-//  while(*input != '\0'){
-    /* Replace white space and seperate out each word
-       so they can be added to the command list      */
-//  while(*input == ' ' || *input == '\t' || *input == '\n'){
-//    *input++ = '\0';
-//  }
-  /* The next arg in command list is set to the start
-     of the next word                                */
-//  command_list++ = line;
-  /* Starting at the head of the current arg, cycle through
-     the next chars until the next whitespace char, which
-     signifies the end of the arg                    */
-//  while(*input != '\0' && *input != ' ' && *input != '\t' && *input != '\n'){
-//    line++;
-//  }   
-//  *command_list = '\0';
-//  if(strcmp(prompt_input[0], "exit") == 0) sys_exit();
+}
+
+/* args: Command, filename
+   returns: nothing                     */
+void execute_out(char** args, char* file){
+  printf("This is an output redirect\n Args = %s\nFile = %s\n", args[0], file);
+  freopen(file, "w", stdout);
+  execute(args);
+  fclose(stdout);
 }
