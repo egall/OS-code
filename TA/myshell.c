@@ -106,6 +106,7 @@ void execute(char** command_list){
   int status;
   int tester;
 
+  printf("executing the following command: %s\n", command_list[0]);
   /* Special case for exit */
   if(strcmp(command_list[0], "exit") == 0 ){
     sys_exit();
@@ -150,9 +151,28 @@ void execute_in(char** args, char* file){
 
 /* args: Command, filename
    returns: nothing                     */
-void execute_out(char** args, char* file){
-  printf("This is an output redirect\n Args = %s\nFile = %s\n", args[0], file);
-  freopen(file, "w", stdout);
-  execute(args);
-  fclose(stdout);
+void execute_out(char** command_list, char* file){
+  printf("This is an output redirect\n Args = %s\nFile = %s\n", command_list[0], file);
+  pid_t pid;
+  int status;
+    /* If fork() fails, -1 is returned, error out */
+    if( (pid = fork() ) < 0){
+      printf("Error: Fork failed\n");
+      exit(0);
+    }
+    /* If this is the child process pid == 0 */
+    else if(pid == 0){
+      /* Execute command, error out if command fails */
+      freopen(file, "w", stdout);
+      if(execvp(*command_list, command_list) < 0){
+        printf("Error: execvp() failed\n");
+        exit(0);
+      } 
+      fclose(stdout);
+    }
+    /* If it's the parent */
+    else {
+      /* Wait while for child to finish */
+      while(wait(&status) != pid);
+    }
 }
